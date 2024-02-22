@@ -1,5 +1,6 @@
 package com.ipi.jva350;
 
+import com.ipi.jva350.model.SalarieAideADomicile;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
