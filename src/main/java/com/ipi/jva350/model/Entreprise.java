@@ -38,7 +38,6 @@ public final class Entreprise {
         datePaque.put(2035, LocalDate.of(2035, 3, 25));
     }
 
-
     public static List<LocalDate> joursFeries(LocalDate now){
 
         return Arrays.asList(
@@ -147,8 +146,6 @@ public final class Entreprise {
      * @return
      */
     public static boolean estDansPlage(LocalDate d, LocalDate debut, LocalDate fin) {
-        // à implémenter en TDD !
-        throw new RuntimeException("à implémenter en TDD !");
+        return !d.isBefore(debut) && !d.isAfter(fin);
     }
-
 }

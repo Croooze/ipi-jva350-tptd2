@@ -1,9 +1,21 @@
 package com.ipi.jva350.model;
 
+import com.ipi.jva350.exception.SalarieException;
+import com.ipi.jva350.repository.SalarieAideADomicileRepository;
+import com.ipi.jva350.service.SalarieAideADomicileService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
 
 public class SalarieAideADomicileTest {
 
@@ -67,4 +79,43 @@ public class SalarieAideADomicileTest {
         Assertions.assertFalse(res, "si le jour est un jour de fin de semaine, le résultat doit être faux");
     }
 
+    @ParameterizedTest
+    @CsvSource ({"'2020-01-01','2021-01-01','305'",
+            "'2020-01-01','2020-02-01','27'"
+
+    })
+    public void testCalculeJoursDeCongeDecomptesPourPlage(String dateDebut, String dateFin, int exceptedNb) {
+        // GIVEN :
+        SalarieAideADomicile monSalarie = new SalarieAideADomicile("Paul", LocalDate.of(2023, 6, 20), LocalDate.now(), 20, 5, 120, 15, 8);
+        // WHEN :
+        LinkedHashSet<LocalDate> res = monSalarie.calculeJoursDeCongeDecomptesPourPlage(
+                LocalDate.parse(dateDebut),
+                LocalDate.parse(dateFin));
+        // THEN :
+        Assertions.assertEquals(exceptedNb, res.size());
+    }
+
+    @Mock
+    private SalarieAideADomicileRepository salarieAideADomicileRepository;
+    @InjectMocks
+    private SalarieAideADomicileService salarieService = new SalarieAideADomicileService();
+    @Test
+    public void testAjouteConge() throws SalarieException {
+        // Given :
+        SalarieAideADomicile monSalarie = new SalarieAideADomicile("Paul",
+                LocalDate.of(2022, 6, 28), LocalDate.of(2023, 11, 1),
+                9, 2.5,
+                80, 20, 8);
+        // When :
+        salarieService.ajouteConge(monSalarie, LocalDate.of(2024, 12, 17),
+                LocalDate.of(2024, 12, 18));
+        // Then :
+        ArgumentCaptor<SalarieAideADomicile> salarieAideADomicileCaptor = ArgumentCaptor.forClass(SalarieAideADomicile.class);
+        Mockito.verify(salarieAideADomicileRepository, Mockito.times(1)).save(salarieAideADomicileCaptor.capture());
+        Assertions.assertEquals(1L, salarieAideADomicileCaptor.getValue().getCongesPayesPrisAnneeNMoins1());
+    }
+
+
 }
+
+
