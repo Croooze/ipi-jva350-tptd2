@@ -11,7 +11,7 @@ public class EntrepriseTest {
 
     //TDD
     // Mon code renvoyait une erreur étant donnée que les valeurs n'avaient pas été encore implémenter dans le model.
-    // Le fait de réaliser ces tests en amont permettent de visualiser au mieux quelles sont les valeurs attendues par la fonction
+    // Le fait de réaliser ces tests en amont permettent de visualiser au mieux quelles sont les valeurs attendues par la fonction.
     @Test
     public void testEstDansPlageDateDansPlage() {
         // Given

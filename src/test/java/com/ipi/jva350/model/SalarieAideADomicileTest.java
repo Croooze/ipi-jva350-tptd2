@@ -5,15 +5,14 @@ import com.ipi.jva350.repository.SalarieAideADomicileRepository;
 import com.ipi.jva350.service.SalarieAideADomicileService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
-
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
 
@@ -115,7 +114,33 @@ public class SalarieAideADomicileTest {
         Assertions.assertEquals(1L, salarieAideADomicileCaptor.getValue().getCongesPayesPrisAnneeNMoins1());
     }
 
+    @Test
+    public void testCalculeLimiteEntrepriseCongesPermis() {
+        LocalDate moisEnCours = LocalDate.now();
+        double congesPayesAcquisAnneeNMoins1 = 20.0;
+        LocalDate moisDebutContrat = LocalDate.of(2023, 1, 1);
+        LocalDate premierJourDeConge = LocalDate.of(2024, 7, 1);
+        LocalDate dernierJourDeConge = LocalDate.of(2024, 7, 15);
 
+        SalarieAideADomicileRepository salarieAideADomicileRepository = Mockito.mock(SalarieAideADomicileRepository.class);
+        Mockito.when(salarieAideADomicileRepository.partCongesPrisTotauxAnneeNMoins1()).thenReturn(0.0);
+
+        SalarieAideADomicileService salarieAideADomicileService = new SalarieAideADomicileService();
+        long limiteConges = salarieAideADomicileService.calculeLimiteEntrepriseCongesPermis(moisEnCours, congesPayesAcquisAnneeNMoins1, moisDebutContrat, premierJourDeConge, dernierJourDeConge);
+
+        double proportionPondereeDuConge = Math.max(Entreprise.proportionPondereeDuMois(premierJourDeConge),
+                Entreprise.proportionPondereeDuMois(dernierJourDeConge));
+        double limiteAttendue = proportionPondereeDuConge * congesPayesAcquisAnneeNMoins1;
+        limiteAttendue += 0.2 * congesPayesAcquisAnneeNMoins1;
+        limiteAttendue += 0.1 * congesPayesAcquisAnneeNMoins1;
+        limiteAttendue += Math.min(moisEnCours.getYear() - moisDebutContrat.getYear(), 10);
+
+        BigDecimal limiteAttendueBd = new BigDecimal(Double.toString(limiteAttendue));
+        limiteAttendueBd = limiteAttendueBd.setScale(3, RoundingMode.HALF_UP);
+        long limiteAttendueArrondi = Math.round(limiteAttendueBd.doubleValue());
+
+        Assertions.assertEquals(limiteAttendueArrondi, limiteConges);
+    }
 }
 
 
